@@ -1,0 +1,69 @@
+{
+  "model": "XGBoost (n_estimators=200, max_depth=4, lr=0.1)",
+  "features": [
+    "Age",
+    "SystolicBP",
+    "DiastolicBP",
+    "BS",
+    "BodyTemp",
+    "HeartRate"
+  ],
+  "classes": [
+    "low risk",
+    "mid risk",
+    "high risk"
+  ],
+  "feature_medians": [
+    26.0,
+    120.0,
+    80.0,
+    7.5,
+    98.0,
+    76.0
+  ],
+  "dataset_source": "https://archive.ics.uci.edu/static/public/863/maternal+health+risk.zip",
+  "dataset_rows": 1014,
+  "train_rows": 811,
+  "test_rows": 203,
+  "test_metrics": {
+    "accuracy": 0.8522,
+    "per_class": {
+      "low risk": {
+        "precision": 0.85,
+        "recall": 0.8395,
+        "f1": 0.8447,
+        "support": 81
+      },
+      "mid risk": {
+        "precision": 0.8125,
+        "recall": 0.7761,
+        "f1": 0.7939,
+        "support": 67
+      },
+      "high risk": {
+        "precision": 0.8983,
+        "recall": 0.9636,
+        "f1": 0.9298,
+        "support": 55
+      }
+    },
+    "confusion_matrix": [
+      [
+        68,
+        12,
+        1
+      ],
+      [
+        10,
+        52,
+        5
+      ],
+      [
+        2,
+        0,
+        53
+      ]
+    ]
+  },
+  "trained_on": "2026-11-06"
+}
