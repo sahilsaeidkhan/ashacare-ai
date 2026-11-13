@@ -7,31 +7,38 @@ An ASHA worker in rural India visits pregnant women with only a BP cuff, a
 thermometer and a glucometer. AshaCare AI tells her, on the spot, which mothers
 are high-risk and need urgent referral — and why, in plain language.
 
+## Demo video
+
+🎥 **Watch the demo (68 seconds):** https://www.youtube.com/watch?v=RUKevNL949M
+(unlisted) — high-risk case → low-risk contrast → batch roster → printable
+summary, with narration and captions. Every screen shown is the real running
+app; every case is a real row from the UCI dataset.
+
 ## What it does
 
 1. Worker enters **6 basic vitals** — age, systolic BP, diastolic BP, blood
-   sugar, body temperature, heart rate.
+sugar, body temperature, heart rate.
 2. An **XGBoost classifier** (trained on the UCI Maternal Health Risk dataset,
-   1,014 cases) outputs a risk level — **Low / Mid / High** — with class
-   probabilities.
+1,014 cases) outputs a risk level — **Low / Mid / High** — with class
+probabilities.
 3. Each prediction comes with **plain-language risk drivers** — the vitals
-   actually pushing this case toward its risk level, measured from the model by
-   baseline replacement (replace a vital with the training median, see how much
-   the predicted probability falls) — each one written as a sentence against
-   the usual range ("Systolic blood pressure is 160 mm Hg — above the usual
-   120 mm Hg"), plus a one-paragraph `plain_summary` the worker can read
-   as-is, and **rule-based referral urgency** (see below).
+actually pushing this case toward its risk level, measured from the model by
+baseline replacement (replace a vital with the training median, see how much
+the predicted probability falls) — each one written as a sentence against
+the usual range ("Systolic blood pressure is 160 mm Hg — above the usual
+120 mm Hg"), plus a one-paragraph `plain_summary` the worker can read
+as-is, and **rule-based referral urgency** (see below).
 4. **Batch mode:** upload a whole village roster as CSV and get a risk-ranked
-   priority list — who to visit first. Bad rows (missing / non-numeric /
-   out-of-range vitals) are skipped and listed, never scored on guessed
-   values and never failing the whole roster. Try it instantly with the
-   included sample roster — `data/sample_roster.csv` (8 real dataset rows,
-   3 High / 2 Mid / 2 Low plus 1 row with a missing blood-sugar reading
-   that gets skipped and listed; names are illustrative) — downloadable
-   from the dashboard's Batch tab.
+priority list — who to visit first. Bad rows (missing / non-numeric /
+out-of-range vitals) are skipped and listed, never scored on guessed
+values and never failing the whole roster. Try it instantly with the
+included sample roster — `data/sample_roster.csv` (8 real dataset rows,
+3 High / 2 Mid / 2 Low plus 1 row with a missing blood-sugar reading
+that gets skipped and listed; names are illustrative) — downloadable
+from the dashboard's Batch tab.
 5. **Printable visit summary:** the ranked priority list downloads as plain
-   text (.txt) — counts by urgency, one plain-language line per mother, the
-   skipped rows — so it works on paper or a basic phone with no signal.
+text (.txt) — counts by urgency, one plain-language line per mother, the
+skipped rows — so it works on paper or a basic phone with no signal.
 
 ## Referral urgency (rule-based — not a model output)
 
@@ -75,12 +82,12 @@ pytest                                     # tests
 
 - `GET /health` — model status + held-out test metrics.
 - `POST /triage` — one case, 6 vitals in, risk level + probabilities + top
-  risk drivers (each with a plain-language `sentence`) + a one-paragraph
-  `plain_summary` + referral guidance out.
+risk drivers (each with a plain-language `sentence`) + a one-paragraph
+`plain_summary` + referral guidance out.
 - `POST /triage/batch` — a roster of cases, returned ranked High → Low,
-  with per-tier `counts` and any bad rows listed under `skipped`.
+with per-tier `counts` and any bad rows listed under `skipped`.
 - Printable visit summary: `ashacare.summary.build_printable_summary`
-  turns a scored roster into plain text (dashboard download button).
+turns a scored roster into plain text (dashboard download button).
 
 Example:
 
@@ -127,48 +134,64 @@ curl -X POST http://localhost:8000/triage -H 'Content-Type: application/json' \
 ## How it maps to the GenHacks judging criteria
 
 - **Impact:** maternal mortality and delayed referral are a documented,
-  severe public-health problem in India; the users are ~1M ASHA frontline
-  workers who today have no triage tool at all. The product acts where the
-  problem is — at the doorstep, with 6 vitals a worker can already measure.
+severe public-health problem in India; the users are ~1M ASHA frontline
+workers who today have no triage tool at all. The product acts where the
+problem is — at the doorstep, with 6 vitals a worker can already measure.
 - **Technical execution:** a real XGBoost model trained on a real public
-  dataset (1,014 cases, held-out accuracy 0.8522, high-risk recall 0.964),
-  a working FastAPI backend + Streamlit dashboard, batch roster triage with
-  bad-row handling, a ready-to-upload sample roster, and 40 passing tests.
+dataset (1,014 cases, held-out accuracy 0.8522, high-risk recall 0.964),
+a working FastAPI backend + Streamlit dashboard, batch roster triage with
+bad-row handling, a ready-to-upload sample roster, and 40 passing tests.
 - **Creativity:** plain-language, model-measured explanations plus
-  rule-based referral urgency with clinical red-flag escalation — and a
-  printable paper summary for villages with no signal — not just a score.
-- **Presentation:** the demo shows the full loop in under 3 minutes —
-  enter vitals → risk + explanation → priority list → printable summary.
+rule-based referral urgency with clinical red-flag escalation — and a
+printable paper summary for villages with no signal — not just a score.
+- **Presentation:** the demo video shows the full loop in 68 seconds —
+  https://www.youtube.com/watch?v=RUKevNL949M — enter vitals → risk +
+  explanation → priority list → printable summary.
 
 ## Status
 
+- **v8 (Nov 13, 2026):** demo video recorded and uploaded —
+  https://www.youtube.com/watch?v=RUKevNL949M (68.5s, 1080p, unlisted,
+  verified playing) — real dashboard captures (high-risk example, low-risk
+  contrast, batch roster with the skipped row, the actual printable summary
+  file), narration + burned-in captions; built with the proven PayGuard
+  video pipeline (Playwright screenshots + ffmpeg). 40/40 tests pass, API +
+  dashboard live-verified before recording.
+- **v7 (Nov 12, 2026):** public GitHub repo live —
+  https://github.com/sahilsaeidkhan/ashacare-ai (all 15 files, MIT license
+  detected, README renders) — and clean-checkout re-verification of
+  saved-v6 from a fresh archive (fresh venv, `train.py` reproduces
+  accuracy 0.8522 with the identical confusion matrix, 40/40 tests,
+  API `/health` + `/triage` + `/triage/batch` live, dashboard HTTP 200).
+  The submission's repo link and "functional demo" claim now both hold
+  from a cold start. 40/40 tests pass.
 - **v6 (Nov 11, 2026):** sample roster for instant batch demo —
-  `data/sample_roster.csv` (8 real UCI rows: 3 High / 2 Mid / 2 Low, all
-  model-verified at confidence > 0.9, plus 1 row with a missing blood-sugar
-  reading that is skipped and listed), downloadable from the dashboard's
-  Batch tab; 2 new tests (roster rows validate + cover all risk levels,
-  batch endpoint ranks High first). 40/40 tests pass, API + dashboard
-  live-verified.
+`data/sample_roster.csv` (8 real UCI rows: 3 High / 2 Mid / 2 Low, all
+model-verified at confidence > 0.9, plus 1 row with a missing blood-sugar
+reading that is skipped and listed), downloadable from the dashboard's
+Batch tab; 2 new tests (roster rows validate + cover all risk levels,
+batch endpoint ranks High first). 40/40 tests pass, API + dashboard
+live-verified.
 - **v5 (Nov 10, 2026):** clean-checkout re-verification of saved-v4 from a
-  fresh clone (fresh venv, `train.py` reproduces accuracy 0.8522 with the
-  same confusion matrix, 38/38 tests, API `/health` + `/triage` live,
-  dashboard HTTP 200) — the submission's "functional demo" claim now holds
-  from a cold start, not just from the dev machine. Stale "36 passing
-  tests" in the judging-criteria map corrected to 38.
+fresh clone (fresh venv, `train.py` reproduces accuracy 0.8522 with the
+same confusion matrix, 38/38 tests, API `/health` + `/triage` live,
+dashboard HTTP 200) — the submission's "functional demo" claim now holds
+from a cold start, not just from the dev machine. Stale "36 passing
+tests" in the judging-criteria map corrected to 38.
 - **v4 (Nov 9, 2026):** one-click demo examples — High / Mid / Low real
-  dataset rows (model-verified, confidence > 0.99) load into the single-case
-  form with one click, so a judge or the video can demo any risk level
-  instantly; demo-video script written. 38/38 tests pass.
+dataset rows (model-verified, confidence > 0.99) load into the single-case
+form with one click, so a judge or the video can demo any risk level
+instantly; demo-video script written. 38/38 tests pass.
 - **v3 (Nov 8, 2026):** plain-language explanation sentences (each driver
-  compared with the usual range), one-paragraph `plain_summary` per case,
-  printable visit summary (.txt) for single cases and rosters, submission
-  writeup draft. 36/36 tests pass.
+compared with the usual range), one-paragraph `plain_summary` per case,
+printable visit summary (.txt) for single cases and rosters, submission
+writeup draft. 36/36 tests pass.
 - **v2 (Nov 7, 2026):** referral-urgency tiers + clinical red-flag
-  escalation to IMMEDIATE, shared `VITAL_RANGES` validation, batch CSV
-  skips bad rows with reasons, dashboard urgency banner + tier counts.
-  28/28 tests pass.
+escalation to IMMEDIATE, shared `VITAL_RANGES` validation, batch CSV
+skips bad rows with reasons, dashboard urgency banner + tier counts.
+28/28 tests pass.
 - **v1 (Nov 6, 2026):** XGBoost triage end to end — dataset, model,
-  FastAPI + Streamlit, batch ranking. 7/7 tests pass.
+FastAPI + Streamlit, batch ranking. 7/7 tests pass.
 
 ## Project layout
 
